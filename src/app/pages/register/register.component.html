@@ -1,0 +1,43 @@
+<div class="container d-flex justify-content-center align-items-center vh-100">
+  <div class="card shadow-lg p-4" style="width: 450px; border-radius: 15px;">
+    <div class="text-center mb-4">
+      <h3 class="fw-bold text-primary">Create Account</h3>
+      <p class="text-muted small">Join TechWyse to get started</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+      
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Email address</label>
+        <input type="email" class="form-control" formControlName="email" 
+               placeholder="Enter your email" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Password</label>
+        <input type="password" class="form-control" formControlName="password" 
+               placeholder="Create a password" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Confirm Password</label>
+        <input type="password" class="form-control" formControlName="confirmPassword" 
+               placeholder="Repeat your password" required>
+      </div>
+
+      <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-primary btn-lg" [disabled]="registerForm.invalid">
+          Sign Up
+        </button>
+      </div>
+
+    </form>
+    
+    <div class="text-center mt-3">
+      <span class="text-muted small">Already have an account? </span>
+      <a routerLink="/login" class="text-decoration-none small fw-bold text-primary">
+        Login here
+      </a>
+    </div>
+  </div>
+</div>
