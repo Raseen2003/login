@@ -6,9 +6,9 @@ export const authGuard = () => {
   const token = localStorage.getItem('authToken');
 
   if (token) {
-    return true; // Token exists, let them in!
+    return true; 
   } else {
-    router.navigate(['/login']); // No token, kick them back to login
+    router.navigate(['/login']);
     return false;
   }
 };

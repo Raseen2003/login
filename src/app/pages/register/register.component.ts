@@ -1,51 +1,93 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component,signal } from '@angular/core';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service'; // 👈 Step 1: Import confirmed
+import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-register',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+    selector: 'app-register',
+    imports: [ReactiveFormsModule, RouterLink],
+    templateUrl: './register.component.html',
+    styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
   registerForm: FormGroup;
+  passwordVisible = signal(false);
+  confirmPasswordVisible = signal(false);
 
-  // 👈 Step 2: Added 'auth' to the constructor
+
   constructor(
     private fb: FormBuilder, 
     private router: Router, 
     private auth: AuthService 
   ) {
     this.registerForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
-    }, { 
-      validators: this.passwordMatchValidator 
-    });
+  // Only allows alphabets and spaces
+  name: ['', [
+    Validators.required, 
+    Validators.pattern('^[a-zA-Z ]*$') 
+  ]],
+  email: ['', [Validators.required, Validators.email]],
+  password: ['', [Validators.required, Validators.minLength(8)]],
+  confirmPassword: ['', Validators.required]
+}, { 
+  validators: this.passwordMatchValidator 
+});
+  }
+togglePassword() {
+    this.passwordVisible.update(v => !v);
   }
 
+  toggleConfirmPassword() {
+    this.confirmPasswordVisible.update(v => !v);
+  }
   passwordMatchValidator(g: FormGroup) {
     return g.get('password')?.value === g.get('confirmPassword')?.value
        ? null : { 'mismatch': true };
   }
+  // Prevents the space key from doing anything
+blockSpaces(event: KeyboardEvent) {
+  if (event.key === ' ' || event.code === 'Space') {
+    event.preventDefault();
+  }
+}
 
-  onRegister() {
+// Cleans the data before sending to Backend (handles Copy-Paste)
+trimFormValues() {
+  const values = this.registerForm.value;
+  return {
+    ...values,
+    email: values.email?.trim(),
+    password: values.password?.trim(),
+    confirmPassword: values.confirmPassword?.trim()
+  };
+} 
+
+ onRegister() {
     if (this.registerForm.valid) {
-      // 👈 Step 3: Call the AuthService
-      this.auth.register(this.registerForm.value).subscribe({
+      // 🌟 STEP 1: Use the cleaning helper you already wrote!
+      // This removes any spaces that were pasted into the fields.
+      const cleanData = this.trimFormValues();
+
+      console.log('Sending Clean Data to Backend:', cleanData);
+
+      this.auth.register(cleanData).subscribe({
         next: (response) => {
-          console.log('✅ Registration Success:', response);
-          alert('User Registered Successfully!');
-          this.router.navigate(['/login']); // Redirect to login page
+          // 🌟 STEP 2: Check for our standardized 'success' flag
+          if (response.success !== false) {
+            console.log('Registration Success:', response);
+            alert('User Registered Successfully!');
+            this.router.navigate(['/login']);
+          } else {
+            // This catches cases where the backend says success: false
+            alert(response.message || 'Registration failed.');
+          }
         },
         error: (err) => {
-          console.error('❌ Registration Error:', err);
-          alert(err.error.message || 'Registration failed. Try again.');
+          console.error('Registration Error:', err);
+          // 🌟 STEP 3: Professional error messaging
+          // Accessing err.error.message ensures the frontend sees the backend validation error
+          alert(err.error?.message || 'Server error. Please try again.');
         }
       });
     }

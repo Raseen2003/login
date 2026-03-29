@@ -1,40 +1,54 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink,Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service'; // 👈 Step 1: Import AuthService
+import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule,RouterLink],// 👈 For navigation links], // 👈 Crucial for Bootstrap forms
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
-  
-  
+    selector: 'app-login',
+    imports: [ReactiveFormsModule, RouterLink],
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   loginForm: FormGroup;
 
-  constructor(private fb: FormBuilder,private auth: AuthService, private router: Router) { // 👈 Step 2: Inject AuthService
+  constructor(private fb: FormBuilder,private auth: AuthService, private router: Router) { 
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
   }
+blockSpaces(event: KeyboardEvent) {
+  if (event.key === ' ' || event.code === 'Space') {
+    event.preventDefault();
+  }
+}
 
 onSubmit() {
   if (this.loginForm.valid) {
-    this.auth.login(this.loginForm.value).subscribe({
+    // 🌟 CLEAN THE DATA (Remove spaces from pasted text)
+    const rawData = this.loginForm.value;
+    const cleanData = {
+      email: rawData.email.trim().toLowerCase(), // Professional: store email in lowercase
+      password: rawData.password.trim()
+    };
+
+    console.log('Sending Clean Login Data:', cleanData);
+
+    this.auth.login(cleanData).subscribe({
       next: (res: any) => {
-        console.log('Login Success!', res);
-        this.auth.saveToken(res.token); // Save the JWT to localStorage
+        // Save token and user info as usual
+        this.auth.saveToken(res.token); 
+        this.auth.setUser(res.user.name);
+
         alert('Login Successful!');
-        this.router.navigate(['/home']); // Send user to the Home page
+        this.router.navigate(['/home']); 
       },
       error: (err) => {
-        alert(err.error.message || 'Login failed');
+        // Show the backend error (like "Invalid password")
+        alert(err.error?.message || 'Login failed');
       }
     });
-  }}
+  }
+}
 }
