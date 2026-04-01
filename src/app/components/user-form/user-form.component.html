@@ -1,34 +1,48 @@
-    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h1 class="modal-title fs-5" id="addUserModalLabel">Add New User</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="addUserModalLabel text-warning">Add New </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+          
+          <div class="mb-3">
+            <label class="col-form-label fw-bold">Name:</label>
+            <input type="text" class="form-control" formControlName="username" placeholder="Enter Name"
+                   [class.is-invalid]="userForm.get('username')?.invalid && userForm.get('username')?.touched">
+            <div class="invalid-feedback">Only letters allowed, no numbers.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="col-form-label fw-bold">Email:</label>
+            <input type="email" class="form-control" formControlName="email" placeholder="Enter email"
+                   [class.is-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+            <div class="invalid-feedback">Enter a valid email address.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="col-form-label fw-bold">Phone Number:</label>
+            <input type="tel" class="form-control" formControlName="phoneno" placeholder="10-digit number"
+                   [class.is-invalid]="userForm.get('phoneno')?.invalid && userForm.get('phoneno')?.touched">
+            <div class="invalid-feedback">Must be exactly 10 digits.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="col-form-label fw-bold">Address:</label>
+            <input type="text" class="form-control" formControlName="address" placeholder="Enter address">
+          </div>
+
         </div>
-        <div class="modal-body ">
-            <form>
-            <div class="mb-3">
-                <label for="username" class="col-form-label">Name:</label>
-                <input type="text" class="form-control" id="username" placeholder="Enter Name">
-            </div>
-            <div class="mb-3">
-                <label for="email" class="col-form-label">Email:</label>
-                <input type="email" class="form-control" id="email" placeholder="Enter email">
-            </div>
-            <div class="mb-3">
-                <label for="phone" class="col-form-label">Phone Number:</label>
-                <input type="tel" class="form-control" id="phone" placeholder="Enter phone number">
-            </div>
-            <div class="mb-3">
-                <label for="address" class="col-form-label">Address:</label>
-                <input type="text" class="form-control" id="address" placeholder="Enter address">
-            </div>
-            </form>
-        </div>
+
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Add User</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-warning" [disabled]="userForm.invalid">Add User</button>
         </div>
-        </div>
+      </form>
+
     </div>
-    </div>
+  </div>
+</div>

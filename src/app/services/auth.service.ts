@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal,  } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
@@ -7,52 +7,68 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class AuthService {
+//   private getHeaders() {
+//   const token = localStorage.getItem('authToken'); // Make sure this matches your login key
+//   return {
+//     headers: {
+//       'Authorization': `Bearer ${token}`
+//     }
+//   };
+// }
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  // Signal for the logged-in user name
+
   currentUser = signal<string | null>(localStorage.getItem('userName'));
 
-  // Ensure this matches your Node.js base URL
+ 
   private apiUrl = 'http://localhost:5000/api'; 
 
   constructor() { }
 
   // --- AUTHENTICATION METHODS ---
   register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData);
+    return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
 
   login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
-  }
+  return this.http.post(`${this.apiUrl}/auth/login`, credentials);
+}
 
-  forgotPassword(email: string) {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
-  }
+forgotPassword(email: string) {
+  return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
+}
 
-  resetPassword(token: string, password: any) {
-    return this.http.post(`${this.apiUrl}/reset-password/${token}`, { password });
-  }
+resetPassword(token: string, password: any) {
+  return this.http.post(`${this.apiUrl}/auth/reset-password/${token}`, { password });
+}
 
-  // ---  NEW CRUD METHODS (To fix your Error) ---
 
-  // 1. Fetch all products/users added by current user
-  getAddedUsers(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/contacts`);
-  }
 
-  // 2. Add a new product/user
-  addContact(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/add-contact`, userData);
-  }
+ 
 
-  // 3. Delete a product/user
+  // ---  NEW CRUD METHODS FOR USER MANAGEMENT 
+
+  
+addContact(contactData: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/users/add`, contactData,);
+}
+
+
+getContacts(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/users/all`);
+}
+
+
   deleteContact(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/contact/${id}`);
+    return this.http.delete(`${this.apiUrl}/users/${id}`,);
   }
 
-  // --- SESSION HELPERS ---
+  
+  updateContact(id: string, updatedData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/${id}`, updatedData,);
+  }
+
   setUser(name: string) {
     localStorage.setItem('userName', name);
     this.currentUser.set(name);

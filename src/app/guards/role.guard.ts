@@ -1,15 +1,16 @@
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, CanActivateFn, } from '@angular/router';
 
-export const roleGuard = () => {
+
+export const roleGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const role = localStorage.getItem('userRole');
 
   if (role === 'admin') {
-    return true; // 🔑 Welcome, Admin!
+    return true; 
   } else {
-    alert('Unauthorized! You do not have Admin access.');
-    router.navigate(['/home']); // 🚫 Kick them back to the user home
+    alert('Access Denied: You do not have Admin privileges.');
+    router.navigate(['/home']);
     return false;
   }
 };

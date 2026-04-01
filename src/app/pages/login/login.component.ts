@@ -33,20 +33,31 @@ onSubmit() {
       password: rawData.password.trim()
     };
 
-    console.log('Sending Clean Login Data:', cleanData);
+  
 
-    this.auth.login(cleanData).subscribe({
-      next: (res: any) => {
-        // Save token and user info as usual
-        this.auth.saveToken(res.token); 
-        this.auth.setUser(res.user.name);
+   this.auth.login(cleanData).subscribe({
+  next: (res: any) => {
+    this.auth.saveToken(res.token); 
+    this.auth.setUser(res.user.name);
+    
+    //  Save the role so the guard can check it
+    localStorage.setItem('userRole', res.user.role); 
 
-        alert('Login Successful!');
-        this.router.navigate(['/home']); 
-      },
-      error: (err) => {
-        // Show the backend error (like "Invalid password")
-        alert(err.error?.message || 'Login failed');
+    if (res.user.role === 'admin') {
+      // 🚀 This matches your path: 'admin-dashboard'
+      this.router.navigate(['/admin-dashboard']); 
+    } else {
+      this.router.navigate(['/home']); 
+    }
+  },
+  error: (err) => {
+        console.error('Login Error:', err);
+
+        // Get the specific message sent by your backend middleware
+        const errorMessage = err.error?.message || 'Login failed. Please try again.';
+
+        // Show the alert to the user
+        alert(errorMessage);
       }
     });
   }

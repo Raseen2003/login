@@ -3,15 +3,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule], // 👈 Must include these
+  imports: [ReactiveFormsModule, CommonModule, RouterModule], 
   templateUrl: './reset-password.component.html'
 })
 export class ResetPasswordComponent implements OnInit {
-  // 1. Define your variables here
+ 
   token: string = '';
   resetForm!: FormGroup; 
 
@@ -22,7 +23,7 @@ export class ResetPasswordComponent implements OnInit {
   private router = inject(Router);
 
   ngOnInit() {
-    // 3. Logic goes INSIDE ngOnInit
+    
     this.token = this.route.snapshot.params['token'];
 
     this.resetForm = this.fb.group({
@@ -31,13 +32,13 @@ export class ResetPasswordComponent implements OnInit {
     }, { validators: this.passwordMatchValidator });
   }
 
-  // 4. This is your custom function to check if passwords are same
+
   passwordMatchValidator(g: FormGroup) {
     return g.get('password')?.value === g.get('confirmPassword')?.value 
       ? null : { 'mismatch': true };
   }
 
-  // 5. This function runs when you click the button
+
   onSubmit() {
     if (this.resetForm.valid) {
       const newPassword = this.resetForm.value.password;
