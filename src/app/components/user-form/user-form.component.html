@@ -11,8 +11,8 @@
           
           <div class="mb-3">
             <label class="col-form-label fw-bold">Name:</label>
-            <input type="text" class="form-control" formControlName="username" placeholder="Enter Name"
-                   [class.is-invalid]="userForm.get('username')?.invalid && userForm.get('username')?.touched">
+            <input type="text" class="form-control" formControlName="name" placeholder="Enter Name"
+                   [class.is-invalid]="userForm.get('name')?.invalid && userForm.get('name')?.touched">
             <div class="invalid-feedback">Only letters allowed, no numbers.</div>
           </div>
 
