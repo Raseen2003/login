@@ -1,49 +1,100 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-user-form',
+  selector: 'app-edit-user-form',                          // ✅ correct
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './user-form.component.html',
-  styleUrl: './user-form.component.css',
+  templateUrl: './edit-user-form.component.html',           // ✅ correct
+  styleUrls: ['./edit-user-form.component.css']
 })
-export class UserFormComponent {
+export class EditUserFormComponent implements OnInit {      // ✅ correct
+  editingUserId: string | null = null;
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
-
   showPassword = signal<boolean>(false);
 
-  // ✅ Only 3 required fields: name, email, password
-  // phone, address, role are optional — admin can edit later
-  userForm: FormGroup = this.fb.group({
-    name: ['', [
-      Validators.required,
-      Validators.pattern('^[a-zA-Z ]*$'),
-      Validators.maxLength(15)
-    ]],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [
-      Validators.required,
-      Validators.minLength(6)
-    ]],
-    role: ['user']
-  });
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  existingPicUrl: string | null = null;
+
+  userForm: FormGroup;
+
+  constructor() {
+    this.userForm = this.fb.group({
+      name: ['', [
+        Validators.required,
+        Validators.maxLength(15),
+        Validators.pattern('^[a-zA-Z ]*$')
+      ]],
+      email: ['', [Validators.required, Validators.email]],
+      password: [''],
+      phoneno: ['', [
+        Validators.required,
+        Validators.pattern('^[0-9]{10}$'),
+        Validators.minLength(10),
+        Validators.maxLength(10)
+      ]],
+      address: ['', [
+        Validators.required,
+        Validators.maxLength(50)
+      ]],
+      role: ['user']
+    });
+  }
+
+  ngOnInit(): void {}
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      this.existingPicUrl = null;
+      const reader = new FileReader();
+      reader.onload = (e) => this.previewUrl = e.target?.result as string;
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  resetForNewUser() {
+    this.editingUserId = null;
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.existingPicUrl = null;
+    this.userForm.reset({ role: 'user' });
+    this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.userForm.get('password')?.updateValueAndValidity();
+  }
 
   togglePassword() {
     this.showPassword.update(v => !v);
   }
 
-  blockNumbers(event: KeyboardEvent) {
-    const isLetter = /^[a-zA-Z ]$/.test(event.key);
-    const isControlKey = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(event.key);
-    if (!isLetter && !isControlKey) event.preventDefault();
-  }
+  setUserData(user: any) {
+    this.editingUserId = user._id;
+    this.selectedFile = null;
+    this.previewUrl = null;
 
-  blockSpaces(event: KeyboardEvent) {
-    if (event.key === ' ' || event.code === 'Space') event.preventDefault();
+    if (user.profilePic && user.profilePic !== 'default-avatar.png') {
+      this.existingPicUrl = 'http://localhost:5000' + user.profilePic;
+    } else {
+      this.existingPicUrl = null;
+    }
+
+    this.userForm.patchValue({
+      name: user.name || '',
+      email: user.email || '',
+      phoneno: user.phoneno || user.phone || '',
+      address: user.address || '',
+      role: user.role || 'user',
+      password: ''
+    });
+
+    this.userForm.get('password')?.clearValidators();
+    this.userForm.get('password')?.updateValueAndValidity();
+    this.userForm.markAllAsTouched();
   }
 
   onSubmit() {
@@ -52,22 +103,41 @@ export class UserFormComponent {
       return;
     }
 
-    const cleanData = {
-      name: this.userForm.value.name.trim(),
-      email: this.userForm.value.email.trim().toLowerCase(),
-      password: this.userForm.value.password.trim(),
-      role: this.userForm.value.role,
-      phoneno: '',
-      address: ''
-    };
+    const fd = new FormData();
+    const formValues = this.userForm.getRawValue();
 
-    this.authService.addContact(cleanData).subscribe({
-      next: () => {
-        alert('New user created successfully! Admin can edit their details anytime.');
-        this.userForm.reset({ role: 'user' });
-        window.location.reload();
-      },
-      error: (err: any) => alert(err.error?.message || 'Error adding user')
+    Object.keys(formValues).forEach(key => {
+      const value = formValues[key];
+      if (key === 'password' && !value && this.editingUserId) return;
+      if (value !== null && value !== undefined) {
+        fd.append(key, value);
+      }
     });
+
+    if (this.selectedFile) {
+      fd.append('profilePic', this.selectedFile);
+    }
+
+    if (this.editingUserId) {
+      this.authService.updateContact(this.editingUserId, fd).subscribe({
+        next: () => {
+          alert('Update Success!');
+          window.location.reload();
+        },
+        error: (err) => alert(err.error?.message || 'Upload Failed')
+      });
+    }
+  }
+
+  blockNumbers(event: KeyboardEvent) {
+    const isLetter = /^[a-zA-Z ]$/.test(event.key);
+    const isControlKey = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(event.key);
+    if (!isLetter && !isControlKey) event.preventDefault();
+  }
+
+  onlyNumbers(event: KeyboardEvent) {
+    const isNumber = /[0-9]/.test(event.key);
+    const isControlKey = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(event.key);
+    if (!isNumber && !isControlKey) event.preventDefault();
   }
 }

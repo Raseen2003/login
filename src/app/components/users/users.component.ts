@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { EditUserFormComponent } from '../edit-user-form/edit-user-form.component';
 
+declare var bootstrap: any; // ✅ tells TypeScript that Bootstrap is available globally
+
 @Component({
   selector: 'app-users',
   standalone: true,
@@ -18,7 +20,6 @@ export class UsersComponent implements OnInit {
   userList = signal<any[]>([]);
   userRole = signal<string | null>(null);
 
-  // ✅ Lightbox state
   lightboxUrl: string | null = null;
   lightboxName: string = '';
 
@@ -35,13 +36,11 @@ export class UsersComponent implements OnInit {
     });
   }
 
-  // ✅ Open lightbox with the clicked user's full-size photo
   openLightbox(url: string, name: string) {
     this.lightboxUrl = url;
     this.lightboxName = name;
   }
 
-  // ✅ Close lightbox
   closeLightbox() {
     this.lightboxUrl = null;
     this.lightboxName = '';
@@ -58,10 +57,18 @@ export class UsersComponent implements OnInit {
 
   onEdit(user: any) {
     if (!this.editUserForm) {
-      console.error('Modal component not found!');
+      console.error('EditUserForm not found!');
       return;
     }
+
     this.editUserForm.setUserData(user);
+
+    // ✅ FIXED — editUserModal not addUserModal
+    const modalEl = document.getElementById('editUserModal');
+    if (modalEl) {
+      const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+      modal.show();
+    }
   }
 
   onCreateNew() {

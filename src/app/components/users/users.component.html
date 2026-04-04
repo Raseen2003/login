@@ -14,7 +14,7 @@
         <td class="ps-4 py-3">
           <div class="d-flex align-items-center">
 
-            <!-- ✅ Profile pic — click to open lightbox -->
+            <!-- Profile pic — click to open lightbox -->
             <ng-container *ngIf="user.profilePic && user.profilePic !== 'default-avatar.png'; else letterAvatar">
               <img [src]="'http://localhost:5000' + user.profilePic"
                    class="rounded-circle me-3 border border-warning"
@@ -52,8 +52,8 @@
 
         <td *ngIf="userRole() === 'admin'" class="py-3 text-center">
           <div class="d-flex justify-content-center gap-2">
-            <button class="btn btn-outline-primary btn-sm rounded-2 px-3" (click)="onEdit(user)"
-                    data-bs-toggle="modal" data-bs-target="#editUserModal">
+            <!-- ✅ Removed data-bs-toggle and data-bs-target — modal opened manually in onEdit() -->
+            <button class="btn btn-outline-primary btn-sm rounded-2 px-3" (click)="onEdit(user)">
               <i class="bi bi-pencil me-1"></i> Edit
             </button>
             <button class="btn btn-outline-danger btn-sm rounded-2 px-3" (click)="onDelete(user._id)">
@@ -75,7 +75,7 @@
   </table>
 </div>
 
-<!-- ✅ LIGHTBOX — click the dark background or Close button to dismiss -->
+<!-- Lightbox overlay -->
 <div *ngIf="lightboxUrl"
      class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
      style="background:rgba(0,0,0,0.78); z-index:9999; cursor:pointer;"
