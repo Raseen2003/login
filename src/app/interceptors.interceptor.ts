@@ -9,9 +9,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const ngZone = inject(NgZone); // You'll need this for the zone fix
   const token = localStorage.getItem('authToken');
 
-  const authReq = token 
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) 
-    : req;
+ // ✅ NEW — only adds Authorization, never touches Content-Type
+const authReq = token
+  ? req.clone({ 
+      headers: req.headers.set('Authorization', `Bearer ${token}`)
+    }) 
+  : req;
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {

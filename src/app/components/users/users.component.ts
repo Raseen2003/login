@@ -12,38 +12,45 @@ import { EditUserFormComponent } from '../edit-user-form/edit-user-form.componen
 })
 export class UsersComponent implements OnInit {
   private authService = inject(AuthService);
-  
-  // Access the modal component to send data to it
+
   @ViewChild(EditUserFormComponent) editUserForm!: EditUserFormComponent;
 
   userList = signal<any[]>([]);
   userRole = signal<string | null>(null);
 
+  // ✅ Lightbox state
+  lightboxUrl: string | null = null;
+  lightboxName: string = '';
+
   ngOnInit(): void {
-    // 1. Get role from localStorage (Ensure it's 'admin' or 'user')
     const savedRole = localStorage.getItem('userRole');
     this.userRole.set(savedRole);
-    
-    // 2. Initial data load
     this.loadUsers();
   }
 
   loadUsers() {
     this.authService.getContacts().subscribe({
-      next: (data: any) => {
-        // 'data' should now be the array of users from MongoDB
-        this.userList.set(data); 
-      },
-      error: (err) => console.error('Error fetching registered users:', err)
+      next: (data: any) => this.userList.set(data),
+      error: (err) => console.error('Error fetching users:', err)
     });
+  }
+
+  // ✅ Open lightbox with the clicked user's full-size photo
+  openLightbox(url: string, name: string) {
+    this.lightboxUrl = url;
+    this.lightboxName = name;
+  }
+
+  // ✅ Close lightbox
+  closeLightbox() {
+    this.lightboxUrl = null;
+    this.lightboxName = '';
   }
 
   onDelete(id: string) {
     if (confirm('Are you sure you want to permanently delete this user?')) {
       this.authService.deleteContact(id).subscribe({
-        next: () => {
-          this.loadUsers(); // Refresh the list
-        },
+        next: () => this.loadUsers(),
         error: (err) => alert('Delete failed: ' + err.error.message)
       });
     }
@@ -54,11 +61,9 @@ export class UsersComponent implements OnInit {
       console.error('Modal component not found!');
       return;
     }
-    // Pass the real MongoDB user object to the form
     this.editUserForm.setUserData(user);
   }
 
-  // Helper method for the "Create New User" button
   onCreateNew() {
     if (this.editUserForm) {
       this.editUserForm.resetForNewUser();

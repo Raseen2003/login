@@ -48,8 +48,8 @@ addContact(contactData: any): Observable<any> {
   }
 
   // Updates a user (including new fields like phoneno and address)
- updateContact(id: string, updatedData: any): Observable<any> {
-  return this.http.put(`${this.apiUrl}/users/${id}`, updatedData); // 👈 Must be .put
+updateContact(id: string, updatedData: any): Observable<any> {
+  return this.http.put(`${this.apiUrl}/users/${id}`, updatedData);
 }
 
   // --- ⚙️ UTILITIES ---
