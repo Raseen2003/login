@@ -7,13 +7,10 @@ import { Router } from '@angular/router';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private apiUrl = 'http://localhost:5000/api'; 
+  private apiUrl = 'http://localhost:5000/api';
 
   currentUser = signal<string | null>(localStorage.getItem('userName'));
 
-  constructor() { }
-
-  // --- 🔐 AUTHENTICATION METHODS (UNCHANGED) ---
   register(userData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
@@ -30,29 +27,24 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/auth/reset-password/${token}`, { password });
   }
 
-  // --- 🛠️ USER MANAGEMENT CRUD (UPDATED FOR REAL USERS) ---
-  
-  // Gets all registered users from your MongoDB 'User' collection
-addContact(contactData: any): Observable<any> {
-  // Hits the POST route we just created
-  return this.http.post(`${this.apiUrl}/users/add`, contactData);
-}
-
-  getContacts(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/users/all`);
+  addContact(contactData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users/add`, contactData);
   }
 
-  // Deletes a registered user by ID
+  // ✅ search param — empty string loads all users
+  getContacts(search: string = ''): Observable<any> {
+    const params = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.http.get(`${this.apiUrl}/users/all${params}`);
+  }
+
   deleteContact(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/users/${id}`);
   }
 
-  // Updates a user (including new fields like phoneno and address)
-updateContact(id: string, updatedData: any): Observable<any> {
-  return this.http.put(`${this.apiUrl}/users/${id}`, updatedData);
-}
+  updateContact(id: string, updatedData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/${id}`, updatedData);
+  }
 
-  // --- ⚙️ UTILITIES ---
   setUser(name: string) {
     localStorage.setItem('userName', name);
     this.currentUser.set(name);
@@ -63,7 +55,7 @@ updateContact(id: string, updatedData: any): Observable<any> {
   }
 
   logout() {
-    localStorage.clear(); 
+    localStorage.clear();
     this.currentUser.set(null);
     this.router.navigate(['/login']);
   }

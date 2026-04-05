@@ -1,14 +1,15 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { EditUserFormComponent } from '../edit-user-form/edit-user-form.component';
 
-declare var bootstrap: any; // ✅ tells TypeScript that Bootstrap is available globally
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, EditUserFormComponent],
+  imports: [CommonModule, FormsModule, EditUserFormComponent],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
@@ -20,20 +21,35 @@ export class UsersComponent implements OnInit {
   userList = signal<any[]>([]);
   userRole = signal<string | null>(null);
 
+  // Lightbox
   lightboxUrl: string | null = null;
   lightboxName: string = '';
 
+  // Search (admin only)
+  searchQuery: string = '';
+
+  // View More modal
+  selectedUser: any = null;
+
   ngOnInit(): void {
-    const savedRole = localStorage.getItem('userRole');
-    this.userRole.set(savedRole);
+    this.userRole.set(localStorage.getItem('userRole'));
     this.loadUsers();
   }
 
   loadUsers() {
-    this.authService.getContacts().subscribe({
+    this.authService.getContacts(this.searchQuery).subscribe({
       next: (data: any) => this.userList.set(data),
       error: (err) => console.error('Error fetching users:', err)
     });
+  }
+
+  onSearch() {
+    this.loadUsers();
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.loadUsers();
   }
 
   openLightbox(url: string, name: string) {
@@ -46,24 +62,29 @@ export class UsersComponent implements OnInit {
     this.lightboxName = '';
   }
 
+  // Opens View More modal with user details
+  viewMore(user: any) {
+    this.selectedUser = user;
+    const modalEl = document.getElementById('viewMoreModal');
+    if (modalEl) {
+      const modal = new bootstrap.Modal(modalEl, { backdrop: true });
+      modal.show();
+    }
+  }
+
+  // Soft delete
   onDelete(id: string) {
-    if (confirm('Are you sure you want to permanently delete this user?')) {
+    if (confirm('This user will be deactivated and hidden. Continue?')) {
       this.authService.deleteContact(id).subscribe({
         next: () => this.loadUsers(),
-        error: (err) => alert('Delete failed: ' + err.error.message)
+        error: (err) => alert('Delete failed: ' + err.error?.message)
       });
     }
   }
 
   onEdit(user: any) {
-    if (!this.editUserForm) {
-      console.error('EditUserForm not found!');
-      return;
-    }
-
+    if (!this.editUserForm) return;
     this.editUserForm.setUserData(user);
-
-    // ✅ FIXED — editUserModal not addUserModal
     const modalEl = document.getElementById('editUserModal');
     if (modalEl) {
       const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
@@ -72,8 +93,14 @@ export class UsersComponent implements OnInit {
   }
 
   onCreateNew() {
-    if (this.editUserForm) {
-      this.editUserForm.resetForNewUser();
+    if (this.editUserForm) this.editUserForm.resetForNewUser();
+  }
+
+  // Helper — returns full URL if profilePic exists, else null
+  getProfileUrl(user: any): string | null {
+    if (user?.profilePic && user.profilePic !== 'default-avatar.png') {
+      return 'http://localhost:5000' + user.profilePic;
     }
+    return null;
   }
 }
