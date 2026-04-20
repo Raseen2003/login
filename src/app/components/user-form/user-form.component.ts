@@ -16,7 +16,7 @@ export class UserFormComponent {
 
   showPassword = signal<boolean>(false);
 
-  // ✅ Only name, email, password required — phone/address/photo added later via Edit
+ 
   userForm: FormGroup = this.fb.group({
     name: ['', [
       Validators.required,

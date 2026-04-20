@@ -25,7 +25,7 @@ export class UsersComponent implements OnInit {
   lightboxUrl: string | null = null;
   lightboxName: string = '';
 
-  // Search (admin only)
+  // Search
   searchQuery: string = '';
 
   // View More modal

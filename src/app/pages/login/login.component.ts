@@ -26,7 +26,7 @@ blockSpaces(event: KeyboardEvent) {
 
 onSubmit() {
   if (this.loginForm.valid) {
-    // 🌟 CLEAN THE DATA (Remove spaces from pasted text)
+    //  CLEAN THE DATA (Remove spaces from pasted text)
     const rawData = this.loginForm.value;
     const cleanData = {
       email: rawData.email.trim().toLowerCase(), // Professional: store email in lowercase
@@ -44,7 +44,7 @@ onSubmit() {
     localStorage.setItem('userRole', res.user.role); 
 
     if (res.user.role === 'admin') {
-      // 🚀 This matches your path: 'admin-dashboard'
+      //   This matches your path: 'admin-dashboard'
       this.router.navigate(['/admin-dashboard']); 
     } else {
       this.router.navigate(['/home']); 

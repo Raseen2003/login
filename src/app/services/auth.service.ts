@@ -31,7 +31,7 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/users/add`, contactData);
   }
 
-  // ✅ search param — empty string loads all users
+  //  search param — empty string loads all users
   getContacts(search: string = ''): Observable<any> {
     const params = search ? `?search=${encodeURIComponent(search)}` : '';
     return this.http.get(`${this.apiUrl}/users/all${params}`);
