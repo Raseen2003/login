@@ -6,7 +6,7 @@ import { EditUserFormComponent } from '../edit-user-form/edit-user-form.componen
 
 declare var bootstrap: any;
 
-@Component({
+@Component({ 
   selector: 'app-users',
   standalone: true,
   imports: [CommonModule, FormsModule, EditUserFormComponent],
@@ -14,10 +14,11 @@ declare var bootstrap: any;
   styleUrl: './users.component.css'
 })
 export class UsersComponent implements OnInit {
+  
   private authService = inject(AuthService);
 
-  @ViewChild(EditUserFormComponent) editUserForm!: EditUserFormComponent;
-
+   @ViewChild(EditUserFormComponent) editUserForm!: EditUserFormComponent;
+  
   userList = signal<any[]>([]);
   userRole = signal<string | null>(null);
 
@@ -96,7 +97,7 @@ export class UsersComponent implements OnInit {
     if (this.editUserForm) this.editUserForm.resetForNewUser();
   }
 
-  // Helper — returns full URL if profilePic exists, else null
+
   getProfileUrl(user: any): string | null {
     if (user?.profilePic && user.profilePic !== 'default-avatar.png') {
       return 'http://localhost:5000' + user.profilePic;
